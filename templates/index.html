@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Disease Outbreak Mapper</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0f1117; color: #fff; }
+        .header {
+            background: linear-gradient(135deg, #1a1f2e, #16213e);
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #2a2f3e;
+        }
+        .header h1 { font-size: 20px; font-weight: 600; color: #fff; }
+        .header h1 span { color: #e74c3c; }
+        .live-badge {
+            background: #e74c3c;
+            color: white;
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1px;
+            background: #2a2f3e;
+            border-bottom: 1px solid #2a2f3e;
+        }
+        .stat-card { background: #1a1f2e; padding: 14px 20px; text-align: center; }
+        .stat-card .value { font-size: 24px; font-weight: 700; color: #e74c3c; }
+        .stat-card .label { font-size: 11px; color: #8892a4; margin-top: 2px; text-transform: uppercase; }
+        .main { display: grid; grid-template-columns: 1fr 340px; height: calc(100vh - 120px); }
+        #map { width: 100%; height: 100%; min-height: 400px; }
+        .right-panel {
+            background: #1a1f2e;
+            border-left: 1px solid #2a2f3e;
+            overflow-y: scroll;
+            height: calc(100vh - 120px);
+        }
+        .panel-section { padding: 16px; border-bottom: 1px solid #2a2f3e; }
+        .panel-section h3 { font-size: 13px; text-transform: uppercase; color: #8892a4; margin-bottom: 12px; letter-spacing: 1px; }
+        .risk-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #2a2f3e22;
+        }
+        .risk-item:last-child { border-bottom: none; }
+        .risk-country { font-size: 13px; color: #cdd6f4; }
+        .badge { font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+        .badge.HIGH { background: #e74c3c22; color: #e74c3c; }
+        .badge.MEDIUM { background: #f39c1222; color: #f39c12; }
+        .badge.LOW { background: #2ecc7122; color: #2ecc71; }
+        .news-item { padding: 10px 0; border-bottom: 1px solid #2a2f3e44; cursor: pointer; }
+        .news-item:hover { opacity: 0.8; }
+        .news-item:last-child { border-bottom: none; }
+        .news-title { font-size: 12px; color: #cdd6f4; line-height: 1.4; margin-bottom: 4px; }
+        .news-meta { font-size: 11px; color: #8892a4; }
+        .news-keyword {
+            display: inline-block;
+            background: #e74c3c22;
+            color: #e74c3c;
+            font-size: 10px;
+            padding: 1px 6px;
+            border-radius: 8px;
+            margin-left: 6px;
+        }
+        #riskChart { max-height: 200px; }
+        .right-panel::-webkit-scrollbar { width: 4px; }
+        .right-panel::-webkit-scrollbar-track { background: #1a1f2e; }
+        .right-panel::-webkit-scrollbar-thumb { background: #2a2f3e; border-radius: 2px; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>🦠 Disease Outbreak <span>Mapper</span></h1>
+    <div style="display:flex; align-items:center; gap:12px;">
+        <span style="font-size:12px; color:#8892a4;" id="last-updated">Loading...</span>
+        <span class="live-badge">● LIVE</span>
+    </div>
+</div>
+
+<div class="stats-bar">
+    <div class="stat-card">
+        <div class="value" id="stat-articles">-</div>
+        <div class="label">Articles Scraped</div>
+    </div>
+    <div class="stat-card">
+        <div class="value" id="stat-hotspots">-</div>
+        <div class="label">Regions Tracked</div>
+    </div>
+    <div class="stat-card">
+        <div class="value" style="color:#e74c3c" id="stat-high">-</div>
+        <div class="label">High Risk</div>
+    </div>
+    <div class="stat-card">
+        <div class="value" style="color:#f39c12" id="stat-medium">-</div>
+        <div class="label">Medium Risk</div>
+    </div>
+    <div class="stat-card">
+        <div class="value" style="color:#2ecc71" id="stat-low">-</div>
+        <div class="label">Low Risk</div>
+    </div>
+</div>
+
+<div class="main">
+    <div id="map"></div>
+    <div class="right-panel">
+        <div class="panel-section">
+            <h3>🌍 Risk by Region</h3>
+            <canvas id="riskChart"></canvas>
+        </div>
+        <div class="panel-section">
+            <h3>⚠️ Hotspot Rankings</h3>
+            <div id="hotspot-list">Loading...</div>
+        </div>
+        <div class="panel-section">
+            <h3>📰 Live News Feed</h3>
+            <div id="news-feed">Loading...</div>
+        </div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const COORDS = {
+    "United States": [37.09, -95.71], "USA": [37.09, -95.71],
+    "UK": [55.37, -3.43], "United Kingdom": [55.37, -3.43],
+    "India": [20.59, 78.96], "China": [35.86, 104.19],
+    "Brazil": [-14.23, -51.92], "France": [46.22, 2.21],
+    "Germany": [51.16, 10.45], "Italy": [41.87, 12.56],
+    "Spain": [40.46, -3.74], "Japan": [36.20, 138.25],
+    "Australia": [-25.27, 133.77], "Canada": [56.13, -106.34],
+    "Mexico": [23.63, -102.55], "Russia": [61.52, 105.31],
+    "South Africa": [-30.55, 22.93], "Nigeria": [9.08, 8.67],
+    "Pakistan": [30.37, 69.34], "Bangladesh": [23.68, 90.35],
+    "Indonesia": [-0.78, 113.92], "Sri Lanka": [7.87, 80.77],
+    "Thailand": [15.87, 100.99], "Philippines": [12.87, 121.77]
+};
+
+const RISK_COLORS = { "HIGH": "#e74c3c", "MEDIUM": "#f39c12", "LOW": "#2ecc71" };
+
+// Dark map WITH white country labels
+const map = L.map('map', { zoomControl: true }).setView([20, 0], 2);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution: '© OpenStreetMap © CARTO',
+    maxZoom: 19
+}).addTo(map);
+
+// Load stats
+fetch('/api/stats')
+    .then(r => r.json())
+    .then(data => {
+        document.getElementById('stat-articles').textContent = data.total_articles;
+        document.getElementById('stat-hotspots').textContent = data.total_hotspots;
+        document.getElementById('stat-high').textContent = data.high_risk;
+        document.getElementById('stat-medium').textContent = data.medium_risk;
+        document.getElementById('stat-low').textContent = data.low_risk;
+        document.getElementById('last-updated').textContent = 'Updated: ' + new Date().toLocaleTimeString();
+    })
+    .catch(err => console.log('Stats error:', err));
+
+// Load hotspots
+fetch('/api/hotspots')
+    .then(r => r.json())
+    .then(hotspots => {
+        hotspots.sort((a, b) => b.risk_score - a.risk_score);
+
+        hotspots.forEach(h => {
+            const coords = COORDS[h.country];
+            if (!coords) return;
+            const radius = Math.max(h.risk_score * 800, 50000);
+            L.circle(coords, {
+                color: RISK_COLORS[h.risk_level],
+                fillColor: RISK_COLORS[h.risk_level],
+                fillOpacity: 0.35,
+                radius: radius,
+                weight: 1.5
+            }).addTo(map).bindPopup(`
+                <div style="font-family:Segoe UI;min-width:160px">
+                    <b style="font-size:14px">${h.country}</b><br>
+                    <span style="color:${RISK_COLORS[h.risk_level]};font-weight:600">${h.risk_level} RISK</span><br>
+                    Score: <b>${h.risk_score}</b><br>
+                    Articles: ${h.article_count}
+                </div>
+            `);
+        });
+
+        document.getElementById('hotspot-list').innerHTML = hotspots.slice(0, 10).map(h => `
+            <div class="risk-item">
+                <span class="risk-country">${h.country}</span>
+                <div style="display:flex;align-items:center;gap:8px">
+                    <span style="font-size:12px;font-weight:600;color:${RISK_COLORS[h.risk_level]}">${h.risk_score}</span>
+                    <span class="badge ${h.risk_level}">${h.risk_level}</span>
+                </div>
+            </div>
+        `).join('');
+
+        const top8 = hotspots.slice(0, 8);
+        new Chart(document.getElementById('riskChart'), {
+            type: 'bar',
+            data: {
+                labels: top8.map(h => h.country),
+                datasets: [{
+                    data: top8.map(h => h.risk_score),
+                    backgroundColor: top8.map(h => RISK_COLORS[h.risk_level] + '99'),
+                    borderColor: top8.map(h => RISK_COLORS[h.risk_level]),
+                    borderWidth: 1,
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { ticks: { color: '#8892a4', font: { size: 10 } }, grid: { color: '#2a2f3e' } },
+                    y: { ticks: { color: '#8892a4', font: { size: 10 } }, grid: { color: '#2a2f3e' } }
+                }
+            }
+        });
+    })
+    .catch(err => console.log('Hotspots error:', err));
+
+// Load news
+fetch('/api/news')
+    .then(r => r.json())
+    .then(articles => {
+        document.getElementById('news-feed').innerHTML = articles.map(a => `
+            <div class="news-item" onclick="window.open('${a.url}','_blank')">
+                <div class="news-title">${a.title || 'No title'}</div>
+                <div class="news-meta">
+                    ${a.source || 'Unknown'}
+                    <span class="news-keyword">${a.keyword}</span>
+                </div>
+            </div>
+        `).join('');
+    })
+    .catch(err => console.log('News error:', err));
+</script>
+</body>
+</html>
