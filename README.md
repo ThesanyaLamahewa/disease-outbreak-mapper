@@ -6,12 +6,6 @@ A real-time AI-powered disease outbreak monitoring dashboard that scrapes live n
 
 ---
 
-## 📸 Screenshot
-
-![Disease Outbreak Mapper Dashboard](screenshot.png)
-
----
-
 ## 🚀 Features
 
 - 🗺️ **Interactive World Map** — Real-time hotspot visualization using Leaflet.js with color-coded risk circles
