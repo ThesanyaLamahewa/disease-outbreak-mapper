@@ -1,117 +1,206 @@
-# 🦠 Disease Outbreak Mapper
+# Disease Outbreak Mapper
 
-A real-time AI-powered disease outbreak monitoring dashboard that scrapes live news, predicts hotspots, and visualizes risk levels on an interactive world map.
+An AI-powered real-time epidemic monitoring and visualization platform designed to track global disease outbreak trends using live news intelligence, geographic mapping, and automated risk prediction.
 
-🔴 **Live Demo:** [web-production-52fea.up.railway.app](https://web-production-52fea.up.railway.app)
-
----
-
-## 🚀 Features
-
-- 🗺️ **Interactive World Map** — Real-time hotspot visualization using Leaflet.js with color-coded risk circles
-- 📰 **Live News Scraping** — Automatically scrapes disease-related news from 10+ keywords using NewsAPI
-- 🤖 **AI Risk Prediction** — Keyword-based NLP scoring engine that classifies regions as HIGH, MEDIUM, or LOW risk
-- 📊 **Charts & Analytics** — Bar charts showing risk scores by region using Chart.js
-- 📡 **Live News Feed** — Clickable real-time news articles linked to original sources
-- 🔄 **Auto-updating Stats** — Live article count, region tracking, and risk distribution
+Developed as a full-stack data-driven web application, this project demonstrates practical skills in software engineering, data science, API integration, cloud deployment, and real-time analytics.
 
 ---
 
-## 🛠️ Tech Stack
+## Overview
 
-| Layer | Technology |
-|---|---|
-| Backend | Python, Flask |
-| Database | MongoDB Atlas (NoSQL) |
-| News Data | NewsAPI, BeautifulSoup |
-| AI/ML | Keyword NLP, Risk Scoring Engine |
-| Frontend | HTML, CSS, JavaScript |
-| Map | Leaflet.js |
-| Charts | Chart.js |
-| Deployment | Railway |
+Disease Outbreak Mapper collects global disease-related news articles, analyzes outbreak severity using NLP-based keyword scoring, and visualizes high-risk regions through an interactive live dashboard.
+
+The system was designed to address the lack of accessible public tools capable of monitoring outbreak signals in real time before situations escalate.
+
+Key capabilities include:
+
+* Real-time disease news aggregation
+* AI-powered outbreak risk classification
+* Interactive geographic hotspot mapping
+* REST API architecture
+* Live dashboard analytics
+* Cloud deployment with production hosting
 
 ---
 
-## 📁 Project Structure
+## Features
+
+* Automated disease news collection using NewsAPI
+* AI-based risk prediction engine
+* Interactive hotspot visualization with Leaflet.js
+* Real-time dashboard statistics and charts
+* MongoDB cloud database integration
+* RESTful Flask backend APIs
+* Responsive frontend interface
+* Production deployment on Railway
+
+---
+
+## Tech Stack
+
+| Category           | Technologies          |
+| ------------------ | --------------------- |
+| Backend            | Python, Flask         |
+| Database           | MongoDB Atlas         |
+| Frontend           | HTML, CSS, JavaScript |
+| Mapping            | Leaflet.js            |
+| Data Visualization | Chart.js              |
+| APIs               | NewsAPI               |
+| Web Scraping       | BeautifulSoup         |
+| Deployment         | Railway               |
+| Version Control    | Git & GitHub          |
+
+---
+
+## System Architecture
+
+```text
+NewsAPI / Web Sources
+            ↓
+      Data Collection
+            ↓
+   NLP Risk Prediction Engine
+            ↓
+       MongoDB Storage
+            ↓
+       Flask REST APIs
+            ↓
+ Interactive Dashboard & Map
 ```
-outbreak-mapper/
-├── app.py                 # Flask backend & API routes
-├── config.py              # Configuration & environment variables
-├── requirements.txt       # Python dependencies
-├── Procfile               # Deployment configuration
-├── scraper/
-│   └── news_scraper.py    # NewsAPI scraper
-├── models/
-│   └── predictor.py       # AI risk prediction engine
-└── templates/
-    └── index.html         # Frontend dashboard
+
+---
+
+## AI Risk Prediction
+
+The platform uses a keyword-weighted NLP scoring mechanism to estimate outbreak severity levels.
+
+Risk levels are categorized as:
+
+* HIGH
+* MEDIUM
+* LOW
+
+The prediction engine evaluates:
+
+* outbreak-related terminology,
+* article frequency,
+* severity indicators,
+* country mentions,
+* emergency-related language patterns.
+
+---
+
+## Dashboard Components
+
+### Interactive World Map
+
+Displays outbreak hotspots with color-coded markers representing regional risk levels.
+
+### Real-Time Analytics
+
+Live charts and outbreak statistics generated dynamically from incoming data.
+
+### News Intelligence Feed
+
+Continuously updated outbreak-related news articles with geographic tagging.
+
+---
+
+## REST API Endpoints
+
+```http
+GET /api/stats
+GET /api/hotspots
+GET /api/news
 ```
 
----
-
-## ⚙️ How It Works
-
-1. **News Scraper** fetches articles from NewsAPI using disease keywords (flu, outbreak, epidemic, etc.)
-2. **AI Predictor** analyses each article, calculates a risk score based on keyword weights
-3. **Risk Scores** are saved to MongoDB and grouped by country
-4. **Flask API** serves the data through REST endpoints
-5. **Frontend Dashboard** visualizes everything on an interactive map with live charts
+These endpoints provide live outbreak statistics, hotspot data, and news intelligence for frontend rendering.
 
 ---
 
-## 🔧 Run Locally
+## Challenges Solved
+
+### DNS Resolution Issues
+
+Implemented custom DNS configuration programmatically to ensure stable API communication during deployment.
+
+### Secure Environment Management
+
+Integrated `.env` configuration locally and Railway environment variables in production to protect API credentials.
+
+### Deployment Constraints
+
+Migrated hosting infrastructure to Railway for scalable and accessible cloud deployment.
+
+### Data Quality Filtering
+
+Improved outbreak relevance using weighted keyword analysis to reduce false-positive news classifications.
+
+---
+
+## Learning Outcomes
+
+This project strengthened practical experience in:
+
+* Full-stack application development
+* REST API engineering
+* Cloud deployment workflows
+* NoSQL database design
+* NLP-based data analysis
+* Real-time dashboard systems
+* Debugging and production troubleshooting
+* Version control collaboration using Git and GitHub
+
+---
+
+## Live Deployment
+
+Live Application:
+[Disease Outbreak Mapper Live Demo](https://web-production-52fea.up.railway.app?utm_source=chatgpt.com)
+
+GitHub Repository:
+[GitHub Repository](https://github.com/ThesanyaLamahewa/disease-outbreak-mapper?utm_source=chatgpt.com)
+
+---
+
+## Installation
+
 ```bash
-# Clone the repo
 git clone https://github.com/ThesanyaLamahewa/disease-outbreak-mapper.git
+
 cd disease-outbreak-mapper
 
-# Create virtual environment
-python -m venv venv
-venv\Scripts\activate  # Windows
-source venv/bin/activate  # Mac/Linux
-
-# Install dependencies
 pip install -r requirements.txt
 
-# Create .env file
-MONGO_URI=your_mongodb_uri
-NEWS_API_KEY=your_newsapi_key
-SECRET_KEY=your_secret_key
-
-# Run the app
 python app.py
 ```
 
 ---
 
-## 📊 API Endpoints
+## Environment Variables
 
-| Endpoint | Description |
-|---|---|
-| `GET /` | Main dashboard |
-| `GET /api/stats` | Article & hotspot statistics |
-| `GET /api/hotspots` | Risk scores by country |
-| `GET /api/news` | Latest scraped news articles |
+Create a `.env` file in the project root:
 
----
-
-## 🌍 Risk Level Classification
-
-| Risk Level | Score Range | Color |
-|---|---|---|
-| 🔴 HIGH | 70 - 100 | Red |
-| 🟡 MEDIUM | 40 - 69 | Orange |
-| 🟢 LOW | 0 - 39 | Green |
+```env
+NEWS_API_KEY=your_api_key
+MONGO_URI=your_mongodb_connection
+```
 
 ---
 
-## 👩‍💻 Author
+## Future Improvements
 
-**Thesanya Lamahewa**
-- GitHub: [@ThesanyaLamahewa](https://github.com/ThesanyaLamahewa)
+* Machine learning-based outbreak forecasting
+* Historical outbreak trend analysis
+* User alert and notification system
+* Multi-language news processing
+* Advanced geospatial clustering
+* Public health reporting integration
 
 ---
 
-## 📄 License
+## Author
 
-This project is open source and available under the [MIT License](LICENSE).
+Thesanya Lamahewa
+
+Focused on building impactful AI and data-driven solutions combining software engineering, analytics, and real-world problem solving.
